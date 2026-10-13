@@ -1,0 +1,36 @@
+{
+  "name": "Steamy Dumplings",
+  "short_name": "Steamy Dumplings",
+  "description": "Pick a bamboo steamer and reveal a collectible dumpling.",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08121c",
+  "theme_color": "#08121c",
+  "icons": [
+    {
+      "src": "https://muse.ai/s/squishy-cuties-tq6a9xyxxxvx0xa3/assets/app-icon-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://muse.ai/s/squishy-cuties-tq6a9xyxxxvx0xa3/assets/app-icon-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://muse.ai/s/squishy-cuties-tq6a9xyxxxvx0xa3/assets/app-icon-maskable-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://muse.ai/s/squishy-cuties-tq6a9xyxxxvx0xa3/assets/app-icon-maskable-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
