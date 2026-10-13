@@ -427,7 +427,7 @@
     .customize-head { text-align: center; margin: 8px 0 2px; }
     .customize-head h1 { font-family: "Fredoka"; font-weight: 700; font-size: clamp(1.65rem, 6vw, 2.5rem); line-height: 1.05; }
     .customize-head p { color: var(--muted); font-weight: 700; margin-top: 6px; }
-    .customize-layout { flex: 1; display: flex; gap: 16px; align-items: flex-start; width: min(100%, 880px); margin: clamp(20px, 5vw, 40px) auto 0; min-height: 0; }
+    .customize-layout { flex: 1; display: flex; gap: 16px; align-items: flex-start; width: min(100%, 880px); margin: clamp(64px, 9vw, 104px) auto 0; min-height: 0; }
     .customize-preview { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; }
     .customize-stage { position: relative; width: min(100%, 400px); aspect-ratio: 1; overflow: visible; filter: drop-shadow(0 22px 18px rgba(0,0,0,.34)); }
     .customize-look { margin-top: 12px; min-height: 1.25em; text-align: center; font-weight: 800; color: var(--muted); }
@@ -436,9 +436,9 @@
     .customize-stage .goldie-bao, .collection-art.dressed-art .goldie-bao { transform: none; }
     .customize-stage .roster-art.bare-art, .collection-art.dressed-art .roster-art.bare-art { border-radius: 0; box-shadow: none; overflow: visible; }
     .prop-layer { position: absolute; z-index: 6; left: 50%; width: 74%; transform: translateX(-50%); pointer-events: none; }
-    .prop-layer-hat { top: -30.5%; filter: drop-shadow(0 12px 10px rgba(0,0,0,.38)); }
-    .prop-layer-glasses { top: 28.5%; filter: drop-shadow(0 5px 6px rgba(0,0,0,.32)); }
-    .prop-layer-cowl { width: 102%; top: 4.7%; filter: drop-shadow(0 10px 12px rgba(0,0,0,.40)); }
+    .prop-layer-hat { width: var(--pw, 104%); top: calc(46.5% - var(--pw, 104%) * .99); filter: drop-shadow(0 12px 10px rgba(0,0,0,.38)); }
+    .prop-layer-glasses { width: 94%; top: 18%; filter: drop-shadow(0 5px 6px rgba(0,0,0,.32)); }
+    .prop-layer-cowl { width: 100%; top: 5.6%; filter: drop-shadow(0 10px 12px rgba(0,0,0,.40)); }
     .prop-panel { flex: 0 0 300px; min-width: 0; }
     .prop-group { margin-bottom: 18px; }
     .prop-group h3 { font-family: "Fredoka"; font-weight: 700; font-size: .95rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
@@ -2194,8 +2194,8 @@
       }
 
       const HAT_PROPS = [
-        ["party-hat","Party hat"],["crown","Crown"],["cap","Cap"],["witch-hat","Witch hat"],["cowboy-hat","Cowboy hat"],
-        ["beanie","Beanie"],["top-hat","Top hat"],["propeller-beanie","Propeller beanie"],["rabbit-ears","Rabbit ears"],["bat-mask","Bat Cowl"]
+        ["party-hat","Party hat",96],["crown","Crown",108],["cap","Cap",94],["witch-hat","Witch hat",102],["cowboy-hat","Cowboy hat",100],
+        ["beanie","Beanie",100],["top-hat","Top hat",104],["propeller-beanie","Propeller beanie",100],["rabbit-ears","Rabbit ears",104],["bat-mask","Bat Cowl",0]
       ];
       const GLASSES_PROPS = [
         ["sunglasses","Sunglasses"],["round-glasses","Round glasses"],["star-glasses","Star glasses"],["heart-glasses","Heart glasses"],["3d-glasses","3D glasses"]
@@ -2205,7 +2205,13 @@
         return found ? found[1] : "";
       }
       function propLayersMarkup(hat, glasses) {
-        return `${hat ? `<img class="prop-layer ${hat === "bat-mask" ? "prop-layer-cowl" : "prop-layer-hat"}" src="assets/props/${hat}.png" alt="">` : ""}${glasses ? `<img class="prop-layer prop-layer-glasses" src="assets/props/${glasses}.png" alt="">` : ""}`;
+        let hatImg = "";
+        if (hat === "bat-mask") hatImg = `<img class="prop-layer prop-layer-cowl" src="assets/props/bat-mask.png" alt="">`;
+        else if (hat) {
+          const entry = HAT_PROPS.find(([f]) => f === hat);
+          hatImg = `<img class="prop-layer prop-layer-hat" style="--pw:${entry ? entry[2] : 104}%" src="assets/props/${hat}.png" alt="">`;
+        }
+        return `${hatImg}${glasses ? `<img class="prop-layer prop-layer-glasses" src="assets/props/${glasses}.png" alt="">` : ""}`;
       }
       function dressedArtMarkup(entry) {
         const item = allItems.find(x => x.id === entry.id);
