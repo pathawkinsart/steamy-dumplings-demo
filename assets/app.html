@@ -1712,7 +1712,7 @@
     <section id="customizeScreen" class="screen" aria-label="Customize your dumpling">
       <div class="topbar">
         <button class="back-button" id="customizeBackBtn" type="button" aria-label="Back to the reveal">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Reveal
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span id="customizeBackLabel">Reveal</span>
         </button>
         <div class="top-actions">
           <div class="counter"><svg class="counter-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5c-1.6-1.2 1.4-2.1 0-3.4M12 5c-1.6-1.2 1.4-2.1 0-3.4M16 5c-1.6-1.2 1.4-2.1 0-3.4"/><ellipse cx="12" cy="10" rx="7.5" ry="2.8"/><path class="basket-fill" d="M4.5 10h15l-1.2 8.2c-4.2 2.2-8.4 2.2-12.6 0z"/><path d="M4.5 10h15l-1.2 8.2c-4.2 2.2-8.4 2.2-12.6 0zM5.1 14h13.8M6 18h12"/></svg><span>Steams</span><strong class="hud-pulls-number">10</strong><span class="refill-countdown" aria-label="Steam refill status">Full</span></div>
@@ -1763,7 +1763,7 @@
           <div class="trophy-current-preview" id="trophyCurrentPreview"></div>
           <div class="trophy-picker" id="trophyPicker"></div>
           <div class="trophy-sheet-actions">
-            <button class="primary-button" id="playTrophyBtn" type="button">Squish &amp; play</button>
+            <button class="primary-button" id="playTrophyBtn" type="button">Customize</button>
             <button class="secondary-button" id="swapTrophyBtn" type="button">Swap dumpling</button>
             <button class="secondary-button trophy-remove-button" id="removeTrophyBtn" type="button">Remove from wall</button>
             <button class="secondary-button" id="closeTrophyActionBtn" type="button">Cancel</button>
@@ -1818,7 +1818,7 @@
       const tierLabels = { common:"Common", stardust:"Stardust Parallel", chaser:"Rare Dumpling", grail:"Gold Parallel", mystery:"Mystery", gag:"Gag Collectible" };
       const REFILL_MS = 60 * 60 * 1000;
       const STEAM_CAP = 10;
-      const state = { screen:"wheel", selected:0, pulls:10, nextRefillAt:null, collection:{stinky:1}, featured:Array(10).fill(null), trophySlot:null, trophyMode:"picker", result:null, duplicate:false, opening:false, previousScreen:"wheel", playItem:null, playReturnScreen:"album", unviewedPull:false, customHat:null, customGlasses:null, dressedUps:[] };
+      const state = { screen:"wheel", selected:0, pulls:10, nextRefillAt:null, collection:{}, featured:Array(10).fill(null), trophySlot:null, trophyMode:"picker", result:null, duplicate:false, opening:false, previousScreen:"wheel", playItem:null, playReturnScreen:"album", unviewedPull:false, customHat:null, customGlasses:null, dressedUps:[], customizeItem:null, customizeFrom:"reveal" };
       const packColors = [
         {main:"#526f84", light:"#9fb6c3", gleam:"#eaf3f5", sparkle:"#d7eef0"},
         {main:"#286f75", light:"#86b5b8", gleam:"#e8f4f4", sparkle:"#ffffff"},
@@ -2007,7 +2007,7 @@
       function trophyWallMarkup() {
         return Array.from({length:10},(_,i)=>{
           const item=allItems.find(x=>x.id===state.featured[i]);
-          return `<span class="trophy-slot ts${i+1}" aria-label="${item?`${item.name} featured in trophy slot ${i+1}`:`Empty trophy slot ${i+1}`}">${item?`<span class="trophy-item">${photorealArt(item,true)}</span>`:``}</span>`;
+          return `<span class="trophy-slot ts${i+1}" aria-label="${item?`${item.name} featured in trophy slot ${i+1}`:`Empty trophy slot ${i+1}`}">${item?`<span class="trophy-item">${savedLookArt(item)}</span>`:``}</span>`;
         }).join("");
       }
       function renderWheel() {
@@ -2289,10 +2289,17 @@
         const item = allItems.find(x => x.id === entry.id);
         return item ? `${photorealArt(item, true)}${propLayersMarkup(entry.hat, entry.glasses)}` : "";
       }
+      function savedLookArt(item) {
+        const entry = state.dressedUps.find(e => e.id === item.id);
+        return entry ? dressedArtMarkup(entry) : photorealArt(item, true);
+      }
       function renderCustomize() {
-        const item = state.result;
+        const item = state.customizeItem || state.result;
         if (!item) return;
         $("#customizeTitle").textContent = `Dress up ${item.name}`;
+        $("#customizeBackLabel").textContent = state.customizeFrom === "trophy" ? "Shelf" : "Reveal";
+        $("#customizeBackBtn").setAttribute("aria-label", state.customizeFrom === "trophy" ? "Back to the shelf" : "Back to the reveal");
+        $("#toShelfBtn").textContent = state.customizeFrom === "trophy" ? "Save look" : "To Shelf";
         $("#customizeStage").innerHTML = `${tierFxBack(item.tier, true)}${photorealArt(item, true)}${tierFxFront(item.tier, true)}${propLayersMarkup(state.customHat, state.customGlasses)}`;
         const fillGrid = (el, props, kind, current) => {
           el.innerHTML = props.map(([file,label]) => `<button type="button" class="prop-option${current === file ? " selected" : ""}" data-prop-kind="${kind}" data-prop-file="${file}" aria-pressed="${current === file}" aria-label="${current === file ? `Take off ${label}` : `Put on ${label}`}"><img src="assets/props/${file}.png" alt=""></button>`).join("");
@@ -2304,6 +2311,19 @@
       }
       function openCustomize() {
         if (!state.result) return;
+        state.customizeItem = null;
+        state.customizeFrom = "reveal";
+        renderCustomize();
+        setScreen("customize");
+      }
+      function openTrophyCustomize(item) {
+        if (!item) return;
+        const entry = state.dressedUps.find(e => e.id === item.id);
+        state.customizeItem = item;
+        state.customizeFrom = "trophy";
+        state.customHat = entry ? entry.hat : null;
+        state.customGlasses = entry ? entry.glasses : null;
+        closeTrophyAction();
         renderCustomize();
         setScreen("customize");
       }
@@ -2313,8 +2333,18 @@
         renderCustomize();
       }
       function saveToShelf() {
-        const item = state.result;
+        const item = state.customizeItem || state.result;
         if (!item) return;
+        if (state.customizeFrom === "trophy") {
+          const entry = state.dressedUps.find(e => e.id === item.id);
+          if (entry) { entry.hat = state.customHat; entry.glasses = state.customGlasses; }
+          else state.dressedUps.unshift({ id:item.id, hat:state.customHat, glasses:state.customGlasses });
+          state.customHat = null; state.customGlasses = null;
+          state.customizeItem = null; state.customizeFrom = "reveal";
+          setScreen("album");
+          showShelfToast(`${item.name} is all dressed up!`);
+          return;
+        }
         state.dressedUps.unshift({ id:item.id, hat:state.customHat, glasses:state.customGlasses });
         state.customHat = null; state.customGlasses = null;
         setScreen("album");
@@ -2400,7 +2430,7 @@
           const item=allItems.find(x=>x.id===state.featured[slot]);
           const label=item?`${item.name} in trophy slot ${slot+1}. Tap to swap or remove.`:`Empty trophy slot ${slot+1}. Tap to choose a dumpling.`;
           return `<button type="button" class="trophy-shelf-slot ${item?"filled":"empty"}" data-trophy-slot="${slot}" aria-label="${label}">
-            ${item?`<span class="trophy-item">${photorealArt(item,true)}</span><span class="trophy-name">${item.name}</span>`:`<span class="trophy-add-mark" aria-hidden="true">+</span>`}
+            ${item?`<span class="trophy-item">${savedLookArt(item)}</span><span class="trophy-name">${item.name}</span>`:`<span class="trophy-add-mark" aria-hidden="true">+</span>`}
           </button>`;
         }).join("");
       }
@@ -2437,11 +2467,11 @@
           const item=allItems.find(x=>x.id===state.featured[slot]);
           $("#trophyActionTitle").textContent=item.name;
           $("#trophyActionCopy").textContent=`Displayed in Trophy Wall slot ${slot+1}.`;
-          $("#trophyCurrentPreview").innerHTML=photorealArt(item,true);
+          $("#trophyCurrentPreview").innerHTML=savedLookArt(item);
           $("#trophyCurrentPreview").classList.add("visible");
           $("#trophyPicker").classList.remove("visible");
           $("#trophyPicker").innerHTML="";
-          $("#playTrophyBtn").textContent=item.tier==="gag"?"View collectible":"Squish & play";
+          $("#playTrophyBtn").textContent=item.tier==="gag"?"View collectible":"Customize";
           $("#playTrophyBtn").style.display="block";
           $("#swapTrophyBtn").style.display="block";
           $("#removeTrophyBtn").style.display="block";
@@ -2580,6 +2610,7 @@
           const groupOwned = items.filter(x=>state.collection[x.id]).length;
           const cards = items.map(item => {
             const count = state.collection[item.id] || 0;
+            const lookEntry = count ? state.dressedUps.find(e => e.id === item.id) : null;
             const hiddenMystery = item.tier === "mystery" && !count;
             const lockedGag = item.tier === "gag" && !count;
             const displayName = hiddenMystery || lockedGag ? "???" : item.name;
@@ -2587,7 +2618,7 @@
             const lockedGagAttrs = lockedGag ? ` data-locked-gag="true"` : "";
             const cardLabel = count ? (item.tier === "gag" ? `View ${item.name}` : `View ${item.name}`) : lockedGag ? "Mystery gag collectible, not found yet. Tap for a hint." : `${displayName}, not found yet`;
             return `<button type="button" class="collection-card ${count?"owned":"unowned"}" data-sound-id="${item.id}"${lockedGagAttrs} ${disabled?"disabled":""} aria-label="${cardLabel}">
-              <div class="collection-art ${item.tier==="stardust"&&count?"stardust-wrap":""}${count&&item.sprite?" bare-art":""}">${count?photorealArt(item,!!item.sprite):`<div class="locked-art" aria-hidden="true"><div class="unknown-mark">???</div></div>`}</div>
+              <div class="collection-art ${lookEntry?"dressed-art":`${item.tier==="stardust"&&count?"stardust-wrap":""}${count&&item.sprite?" bare-art":""}`}">${count?(lookEntry?dressedArtMarkup(lookEntry):photorealArt(item,!!item.sprite)):`<div class="locked-art" aria-hidden="true"><div class="unknown-mark">???</div></div>`}</div>
               ${state.featured.includes(item.id)?`<div class="featured-badge">Wall ${state.featured.indexOf(item.id)+1}</div>`:""}
               ${count?`<div class="count-badge">×${count}</div>`:""}
               <div class="collection-name">${displayName}</div>
@@ -2621,7 +2652,7 @@
       function stinkyShouldBuzz() {
         const revealVisible = state.screen === "rip" && state.result?.id === "stinky" &&
           $("#ripScreen").classList.contains("reveal-active") && $("#revealPanel").classList.contains("visible");
-        return !document.hidden && (revealVisible || (state.screen === "album" && stinkyShelfVisible));
+        return !document.hidden && (revealVisible || (state.screen === "album" && stinkyShelfVisible && !!state.collection["stinky"]));
       }
       function fadeStinkyBuzz(target, immediate = false) {
         cancelAnimationFrame(stinkyBuzzFadeRaf);
@@ -3944,7 +3975,13 @@
       $("#anotherBtn").addEventListener("click",()=>setScreen("wheel"));
       $("#replayBtn").addEventListener("click",replayReveal);
       $("#customizeBtn").addEventListener("click",openCustomize);
-      $("#customizeBackBtn").addEventListener("click",()=>setScreen("rip"));
+      $("#customizeBackBtn").addEventListener("click",()=>{
+        if (state.customizeFrom === "trophy") {
+          state.customizeItem = null; state.customizeFrom = "reveal";
+          state.customHat = null; state.customGlasses = null;
+          setScreen("album");
+        } else setScreen("rip");
+      });
       $("#toShelfBtn").addEventListener("click",saveToShelf);
       $("#customizeScreen").addEventListener("click",e=>{
         const option=e.target.closest(".prop-option");
@@ -3985,8 +4022,8 @@
         if(state.trophySlot===null) return;
         const item=allItems.find(x=>x.id===state.featured[state.trophySlot]);
         if(!item) return;
-        closeTrophyAction();
-        openSquishPlay(item,"album");
+        if(item.tier==="gag") { closeTrophyAction(); openSquishPlay(item,"album"); return; }
+        openTrophyCustomize(item);
       });
       $("#swapTrophyBtn").addEventListener("click",()=>{
         if(state.trophySlot===null) return;
