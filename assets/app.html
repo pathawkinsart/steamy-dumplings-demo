@@ -375,7 +375,8 @@
     .natural-steamer-layer { position:absolute; z-index:3; inset:0; width:100%; height:100%; display:block; object-fit:contain; overflow:visible; pointer-events:none; filter:none !important; }
     .reveal-panel .natural-steamer-back-layer,
     .reveal-panel .natural-steamer-layer { filter:none !important; }
-    .reveal-art .dumpling-layer { clip-path:none; }
+    .reveal-art .dumpling-layer { clip-path: none !important; overflow: visible !important; }
+    .reveal-art .photoreal-wrap { overflow: visible; }
     .reveal-art .dumpling-layer .dumpling-variant {
       transform: translateY(3.5%) scale(1.14);
       transform-origin: 50% 62%;
@@ -457,6 +458,20 @@
     /* Dressed-up dumplings saved on the shelf. */
     .dressed-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 11px; position: relative; padding-bottom: 10px; }
     .collection-art.dressed-art { overflow: visible; margin-top: 20%; }
+    /* Whole-dome display: an owned roster dumpling always shows the complete
+       approved dome. The steamer-seat clip/transform below (kept for the
+       seated special art) must never slice it against its frame. */
+    .collection-art.bare-art { overflow: visible; }
+    .collection-art.bare-art .dumpling-layer,
+    .trophy-pick-art .bare-art .dumpling-layer,
+    .trophy-item .bare-art .dumpling-layer,
+    .trophy-current-preview .bare-art .dumpling-layer { clip-path: none; overflow: visible; }
+    .collection-art.bare-art .dumpling-layer .dumpling-variant,
+    .collection-art.bare-art .goldie-bao,
+    .trophy-pick-art .bare-art .dumpling-layer .dumpling-variant,
+    .trophy-pick-art .bare-art .goldie-bao,
+    .trophy-item .bare-art .goldie-bao,
+    .trophy-current-preview .bare-art .goldie-bao { transform: none; }
     @media (min-width: 560px) { .dressed-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
     .secondary-button {
       min-height: 52px; border: 1px solid var(--line); border-radius: 15px; background: var(--panel); color: var(--ink);
@@ -1509,6 +1524,61 @@
       100%{opacity:0;transform:translate(calc(-50% + var(--paper-x-end)),calc(-50% + var(--paper-y) + 90px)) rotate(var(--paper-r-end)) scale(.72)}
     }
 
+    /* ==== Tier spectacle: rare+ dumplings get light, shimmer and sparkle.
+       Effects sit around/over the approved dumpling art only — the dome
+       silhouette is never touched. Transform/opacity animations only. ==== */
+    .tier-fx-back, .tier-fx-front { position: absolute; pointer-events: none; }
+    .tier-fx-back { inset: -13% -11%; z-index: 1; }
+    .tier-fx-front { inset: 0; z-index: 3; }
+    .reveal-art > .photoreal-wrap, .customize-stage > .photoreal-wrap { z-index: 2; }
+    .tier-fx-chaser { --aura-hot: rgba(255,241,196,.95); --aura-mid: rgba(255,190,60,.55); --ring-color: rgba(255,196,64,.8); --shine-color: rgba(255,205,92,.32); --shine-hot: rgba(255,238,176,.8); --spark-color: #ffd76a; --spark-glow: rgba(255,183,46,.95); }
+    .tier-fx-stardust { --aura-hot: rgba(219,203,255,.92); --aura-mid: rgba(124,108,255,.52); --ray-color: rgba(148,140,255,.34); --ring-color: rgba(167,139,250,.75); --shine-color: rgba(150,140,255,.38); --shine-hot: rgba(214,224,255,.85); --spark-color: #c9bcff; --spark-glow: rgba(129,140,248,.95); }
+    .tier-fx-grail { --aura-hot: rgba(255,253,238,1); --aura-mid: rgba(255,206,80,.68); --ray-color: rgba(255,214,90,.42); --ring-color: rgba(255,206,80,.9); --shine-color: rgba(255,222,120,.45); --shine-hot: rgba(255,248,205,.95); --spark-color: #ffe27a; --spark-glow: rgba(255,183,46,1); }
+    .tier-aura { position: absolute; left: 50%; top: 52%; width: 128%; aspect-ratio: 1; transform: translate(-50%,-50%); border-radius: 50%;
+      background: radial-gradient(circle, var(--aura-hot) 0 16%, var(--aura-mid) 42%, transparent 68%);
+      filter: blur(7px); animation: auraIn .8s ease-out both, auraBreathe 3.4s .8s ease-in-out infinite; }
+    .tier-fx-grail .tier-aura { width: 148%; animation: auraIn .8s ease-out both, auraBreathe 2.8s .8s ease-in-out infinite; }
+    @keyframes auraIn { from { opacity: 0; transform: translate(-50%,-50%) scale(.45); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+    @keyframes auraBreathe { 0%,100% { transform: translate(-50%,-50%) scale(.94); opacity: .78; } 50% { transform: translate(-50%,-50%) scale(1.07); opacity: 1; } }
+    .tier-rays { position: absolute; left: 50%; top: 52%; width: 172%; aspect-ratio: 1; transform: translate(-50%,-50%); border-radius: 50%;
+      background: repeating-conic-gradient(from 0deg, var(--ray-color) 0 6deg, transparent 6deg 19deg);
+      -webkit-mask-image: radial-gradient(circle, #000 0 26%, transparent 64%); mask-image: radial-gradient(circle, #000 0 26%, transparent 64%);
+      opacity: .55; animation: raysSpin 26s linear infinite; }
+    .tier-fx-grail .tier-rays { opacity: .75; animation-duration: 20s; }
+    @keyframes raysSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+    .tier-ring { position: absolute; left: 50%; top: 52%; width: 58%; aspect-ratio: 1; transform: translate(-50%,-50%); border-radius: 50%;
+      border: 2px solid var(--ring-color); box-shadow: 0 0 14px var(--ring-color), inset 0 0 14px var(--ring-color);
+      opacity: 0; animation: ringExpand 2.3s cubic-bezier(.16,.6,.3,1) 3; animation-delay: var(--rd, 0s); }
+    .tier-fx-stardust .tier-ring { animation-iteration-count: 4; }
+    .tier-fx-grail .tier-ring { animation-duration: 2.9s; animation-iteration-count: infinite; }
+    @keyframes ringExpand { 0% { transform: translate(-50%,-50%) scale(.42); opacity: 0; } 16% { opacity: .9; } 100% { transform: translate(-50%,-50%) scale(1.95); opacity: 0; } }
+    .tier-shine { position: absolute; inset: 3% 5% 9%; mix-blend-mode: screen; pointer-events: none;
+      -webkit-mask-image: radial-gradient(ellipse 72% 64% at 50% 55%, #000 50%, transparent 78%); mask-image: radial-gradient(ellipse 72% 64% at 50% 55%, #000 50%, transparent 78%); }
+    .tier-shine::before { content: ""; position: absolute; top: -12%; bottom: -12%; left: 0; width: 52%;
+      background: linear-gradient(100deg, transparent, var(--shine-color) 38%, var(--shine-hot) 50%, var(--shine-color) 62%, transparent);
+      transform: translateX(-180%) skewX(-12deg); animation: shineSweep 3.8s ease-in-out infinite; }
+    .tier-fx-stardust .tier-shine::before { animation: shineSweep 3.8s ease-in-out infinite, shineHue 6s linear infinite; }
+    .tier-fx-grail .tier-shine::before { animation-duration: 3s; }
+    @keyframes shineSweep { 0%, 16% { transform: translateX(-180%) skewX(-12deg); } 58%, 100% { transform: translateX(330%) skewX(-12deg); } }
+    @keyframes shineHue { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(55deg); } 100% { filter: hue-rotate(0deg); } }
+    .tier-sparkles { position: absolute; inset: -5% -3%; }
+    .tier-sparkles i { position: absolute; left: var(--sx); top: var(--sy); font-style: normal; font-size: var(--ss, 16px); line-height: 1;
+      color: var(--spark-color); text-shadow: 0 0 9px var(--spark-glow), 0 0 2px #fff; opacity: 0;
+      animation: sparkTwinkle 2.7s ease-in-out infinite; animation-delay: var(--sd, 0s); }
+    @keyframes sparkTwinkle { 0%, 100% { opacity: 0; transform: scale(.35) rotate(0deg) translateY(5px); } 50% { opacity: 1; transform: scale(1.12) rotate(28deg) translateY(-5px); } }
+    /* Calm variant for the customize stage: gentle glow, slow twinkles. */
+    .tier-fx-calm .tier-aura { width: 118%; opacity: .55; animation: auraBreathe 4.6s ease-in-out infinite; }
+    .tier-fx-calm .tier-sparkles i { animation-duration: 3.6s; }
+    /* Reveal panel ambience + banner flair per tier. */
+    .reveal-panel.chaser::before { background: radial-gradient(ellipse, rgba(255,196,64,.36), transparent 66%); }
+    .reveal-panel.stardust::before { background: radial-gradient(ellipse, rgba(139,124,255,.34), transparent 66%); }
+    .reveal-panel.grail::before { background: radial-gradient(ellipse, rgba(255,214,90,.46), transparent 66%); }
+    .reveal-panel.chaser .rarity-banner, .reveal-panel.stardust .rarity-banner, .reveal-panel.grail .rarity-banner { animation: bannerFlair .7s .35s cubic-bezier(.2,1.4,.3,1) both; }
+    .reveal-panel.chaser .rarity-banner { background: #3a2a05; color: #ffd76a; border-color: rgba(255,199,61,.65); box-shadow: 0 0 24px rgba(255,183,46,.5), var(--soft-shadow); }
+    .reveal-panel.stardust .rarity-banner { background: #241a4d; color: #d3c8ff; border-color: rgba(151,132,255,.6); box-shadow: 0 0 24px rgba(124,108,255,.55), var(--soft-shadow); }
+    .reveal-panel.grail .rarity-banner { background: #3d2c00; color: #ffec9e; border-color: rgba(255,215,94,.85); box-shadow: 0 0 34px rgba(255,196,64,.7), var(--soft-shadow); }
+    @keyframes bannerFlair { 0% { transform: scale(.35) rotate(-5deg); opacity: 0; } 58% { transform: scale(1.2) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+
     @media (max-width: 559px) {
       .hero-copy { margin-top: 24px; }
       .wheel-wrap { height: 418px; }
@@ -1937,7 +2007,7 @@
       function trophyWallMarkup() {
         return Array.from({length:10},(_,i)=>{
           const item=allItems.find(x=>x.id===state.featured[i]);
-          return `<span class="trophy-slot ts${i+1}" aria-label="${item?`${item.name} featured in trophy slot ${i+1}`:`Empty trophy slot ${i+1}`}">${item?`<span class="trophy-item">${photorealArt(item,false,"contain")}</span>`:``}</span>`;
+          return `<span class="trophy-slot ts${i+1}" aria-label="${item?`${item.name} featured in trophy slot ${i+1}`:`Empty trophy slot ${i+1}`}">${item?`<span class="trophy-item">${photorealArt(item,true)}</span>`:``}</span>`;
         }).join("");
       }
       function renderWheel() {
@@ -2136,30 +2206,11 @@
       function cubeDumplingArt() {
         return `<span class="cube-art" role="img" aria-label="Cube Dumpling, a glossy slightly scrambled puzzle-cube dumpling with red, blue, green, yellow, orange, and white tiles and a tiny smiling face, seated inside a light-tan bamboo steamer"><img src="assets/cube-dumpling.webp" alt=""></span>`;
       }
-      const SPRITE_COLS = 10;
-      const SPRITE_CELL_WIDTH = 512;
-      const SPRITE_CELL_HEIGHT = 512;
-      const SPRITE_DEFAULT_ART_HEIGHT = 341;
-      const SPRITE_SHEET_WIDTH = SPRITE_COLS * SPRITE_CELL_WIDTH;
-      const SPRITE_SHEET_HEIGHT = 5 * SPRITE_CELL_HEIGHT;
-      function spriteSheetUrl(sheet) {
-        return `assets/dumpling-sprites/sheet-${String(sheet).padStart(2,"0")}.webp`;
-      }
-      function cutoutSheetUrl(sheet) {
-        return `assets/dumpling-sprites/cutout-${String(sheet).padStart(2,"0")}.webp`;
-      }
-      function rosterSpriteArt(item, fit = "cover", bare = false) {
-        const sourceHeight=item.sprite.h||SPRITE_DEFAULT_ART_HEIGHT;
-        const x=(item.sprite.cell%SPRITE_COLS)*SPRITE_CELL_WIDTH;
-        const y=Math.floor(item.sprite.cell/SPRITE_COLS)*SPRITE_CELL_HEIGHT+Math.floor((SPRITE_CELL_HEIGHT-sourceHeight)/2);
-        const label=bare?`${item.name}, ${item.rarity.toLowerCase()} collectible dumpling number ${item.rosterId}`:`${item.name}, ${item.rarity.toLowerCase()} collectible dumpling number ${item.rosterId}, seated in its bamboo steamer`;
-        const preserve=fit==="cover"?"xMidYMid slice":"xMidYMid meet";
-        const svg=`<svg class="photoreal-toy roster-toy" viewBox="${x} ${y} ${SPRITE_CELL_WIDTH} ${sourceHeight}" preserveAspectRatio="${preserve}" role="img" aria-label="${label}"><image href="${cutoutSheetUrl(item.sprite.sheet)}" width="${SPRITE_SHEET_WIDTH}" height="${SPRITE_SHEET_HEIGHT}"></image></svg>`;
-        if (bare) return `<span class="photoreal-wrap roster-art bare-art" style="position:relative;width:100%;height:100%;display:block">${svg}</span>`;
-        return `<span class="photoreal-wrap shaped roster-art" style="position:relative;width:100%;height:100%;display:block">${naturalSteamerLayers()}<span class="dumpling-layer roster-layer">${svg}</span></span>`;
-      }
+      // Roster dumplings render from the approved round-bao base art
+      // (photorealArt); sprite-sheet cell art is retired and never loaded.
+      const ROSTER_TINT={1:[220,1.0,1.0],2:[345,1.0,1.0],3:[335,0.95,1.02],4:[278,1.0,0.95],5:[140,1.0,1.0],6:[30,1.0,1.0],7:[332,0.9,1.02],8:[278,1.0,0.95],9:[220,1.0,1.0],10:[345,1.0,1.0],11:[335,0.95,1.02],12:[278,1.0,0.95],13:[140,1.0,1.0],14:[30,1.0,1.0],15:[332,0.9,1.02],16:[278,1.0,0.95],17:[220,1.0,1.0],18:[345,1.0,1.0],19:[335,0.95,1.02],20:[278,1.0,0.95],21:[178,1.0,1.0],22:[335,0.95,1.02],23:[220,1.0,1.0],24:[178,1.0,1.0],25:[220,1.0,1.0],26:[140,1.0,1.0],27:[52,0.95,1.02],28:[335,0.95,1.02],29:[220,1.0,1.0],30:[140,1.0,1.0],31:[52,0.95,1.02],32:[335,0.95,1.02],33:[220,1.0,1.0],34:[140,1.0,1.0],35:[52,0.95,1.02],36:[220,1.0,1.0],37:[220,1.0,1.0],38:[140,1.0,1.0],39:[220,1.0,1.0],40:[220,1.0,1.0],41:[140,1.0,1.0],42:[220,1.0,1.0],43:[335,0.95,1.02],44:[220,1.0,1.0],45:[220,1.0,1.0],46:[220,1.0,1.0],47:[220,1.0,1.0],48:[140,1.0,1.0],49:[335,0.95,1.02],50:[220,1.0,1.0],51:[220,1.0,1.0],52:[140,1.0,1.0],53:[220,1.0,1.0],54:[220,1.0,1.0],55:[140,1.0,1.0],56:[220,1.0,1.0],57:[220,1.0,1.0],58:[140,1.0,1.0],59:[220,1.0,1.0],60:[220,1.0,1.0],61:[140,1.0,1.0],62:[220,1.0,1.0],63:[220,1.0,1.0],64:[140,1.0,1.0],65:[220,1.0,1.0],66:[220,1.0,1.0],67:[140,1.0,1.0],68:[220,1.0,1.0],69:[220,1.0,1.0],70:[140,1.0,1.0],71:[220,1.0,1.0],72:[220,1.0,1.0],73:[140,1.0,1.0],74:[220,1.0,1.0],75:[220,1.0,1.0],76:[140,1.0,1.0],77:[335,0.95,1.02],78:[220,1.0,1.0],79:[335,0.95,1.02],80:[220,1.0,1.0],81:[335,0.95,1.02],82:[220,1.0,1.0],83:[335,0.95,1.02],84:[220,1.0,1.0],85:[335,0.95,1.02],86:[220,1.0,1.0],87:[335,0.95,1.02],88:[220,1.0,1.0],89:[335,0.95,1.02],90:[220,1.0,1.0],91:[335,0.95,1.02],92:[220,1.0,1.0],93:[335,0.95,1.02],94:[220,1.0,1.0],95:[335,0.95,1.02],96:[220,1.0,1.0],97:[335,0.95,1.02],98:[220,1.0,1.0],99:[335,0.95,1.02],100:[220,1.0,1.0],101:[30,1.0,1.0],102:[28,0.9,0.95],103:[26,0.9,0.9],104:[22,0.95,0.85],105:[28,0.9,0.95],106:[38,0.7,1.05],107:[30,1.0,1.0],108:[28,0.9,0.95],109:[26,0.9,0.9],110:[22,0.95,0.85],111:[28,0.9,0.95],112:[38,0.7,1.05],113:[30,1.0,1.0],114:[28,0.9,0.95],115:[26,0.9,0.9],116:[22,0.95,0.85],117:[28,0.9,0.95],118:[38,0.7,1.05],119:[30,1.0,1.0],120:[28,0.9,0.95],121:[26,0.9,0.9],122:[22,0.95,0.85],123:[28,0.9,0.95],124:[38,0.7,1.05],125:[30,1.0,1.0],126:[28,0.9,0.95],127:[26,0.9,0.9],128:[22,0.95,0.85],129:[45,1.0,1.0],130:[54,1.0,1.02],131:[52,0.95,1.02],132:[45,1.0,1.0],133:[54,1.0,1.02],134:[52,0.95,1.02],135:[45,1.0,1.0],136:[54,1.0,1.02],137:[52,0.95,1.02],138:[45,1.0,1.0],139:[54,1.0,1.02],140:[52,0.95,1.02],141:[45,1.0,1.0],142:[54,1.0,1.02],143:[52,0.95,1.02],144:[45,1.0,1.0],145:[54,1.0,1.02],146:[52,0.95,1.02],147:[45,1.0,1.0],148:[54,1.0,1.02],149:[52,0.95,1.02],150:[45,1.0,1.0],151:[54,1.0,1.02],152:[52,0.95,1.02],153:[135,1.0,0.95],154:[140,1.0,1.0],155:[125,1.0,1.0],156:[135,1.0,0.95],157:[140,1.0,1.0],158:[125,1.0,1.0],159:[135,1.0,0.95],160:[140,1.0,1.0],161:[125,1.0,1.0],162:[135,1.0,0.95],163:[140,1.0,1.0],164:[125,1.0,1.0],165:[135,1.0,0.95],166:[140,1.0,1.0],167:[125,1.0,1.0],168:[135,1.0,0.95],169:[140,1.0,1.0],170:[125,1.0,1.0],171:[135,1.0,0.95],172:[140,1.0,1.0],173:[125,1.0,1.0],174:[135,1.0,0.95],175:[140,1.0,1.0],176:[205,0.35,1.12],177:[205,0.35,1.12],178:[205,0.35,1.12],179:[205,0.35,1.12],180:[205,0.35,1.12],181:[205,0.35,1.12],182:[205,0.35,1.12],183:[205,0.35,1.12],184:[205,0.35,1.12],185:[205,0.35,1.12],186:[205,0.35,1.12],187:[205,0.35,1.12],188:[205,0.35,1.12],189:[205,0.35,1.12],190:[205,0.35,1.12],191:[205,0.35,1.12],192:[205,0.35,1.12],193:[205,0.35,1.12],194:[205,0.35,1.12],195:[205,0.35,1.12],196:[205,0.35,1.12],197:[205,0.35,1.12],198:[205,0.35,1.12],199:[205,0.35,1.12],200:[200,1.1,1.02],201:[200,1.1,1.02],202:[200,1.1,1.02],203:[200,1.1,1.02],204:[200,1.1,1.02],205:[200,1.1,1.02],206:[200,1.1,1.02],207:[200,1.1,1.02],208:[200,1.1,1.02],209:[200,1.1,1.02],210:[200,1.1,1.02],211:[200,1.1,1.02],212:[200,1.1,1.02],213:[200,1.1,1.02],214:[200,1.1,1.02],215:[200,1.1,1.02],216:[200,1.1,1.02],217:[200,1.1,1.02],218:[200,1.1,1.02],219:[200,1.1,1.02],220:[200,1.1,1.02],221:[200,1.1,1.02],222:[200,1.1,1.02],223:[200,1.1,1.02],224:[200,1.1,1.02],225:[200,1.1,1.02],226:[200,1.1,1.02],227:[200,1.1,1.02],228:[200,1.1,1.02],229:[200,1.1,1.02],230:[200,1.1,1.02],231:[200,1.1,1.02],232:[200,1.1,1.02],233:[200,1.1,1.02],234:[200,1.1,1.02],235:[200,1.1,1.02],236:[200,1.1,1.02],237:[200,1.1,1.02],238:[200,1.1,1.02],239:[200,1.1,1.02],240:[200,1.1,1.02],241:[200,1.1,1.02],242:[200,1.1,1.02],243:[200,1.1,1.02],244:[200,1.1,1.02],245:[200,1.1,1.02],246:[200,1.1,1.02],247:[200,1.1,1.02],248:[200,1.1,1.02],249:[200,0.5,1.08],250:[200,0.5,1.08],251:[200,0.5,1.08],252:[200,0.5,1.08],253:[200,0.5,1.08],254:[200,0.5,1.08],255:[200,0.5,1.08],256:[200,0.5,1.08],257:[200,0.5,1.08],258:[200,0.5,1.08],259:[200,0.5,1.08],260:[200,0.5,1.08],261:[200,0.5,1.08],262:[200,0.5,1.08],263:[200,0.5,1.08],264:[200,0.5,1.08],265:[200,0.5,1.08],266:[200,0.5,1.08],267:[200,0.5,1.08],268:[200,0.5,1.08],269:[200,0.5,1.08],270:[200,0.5,1.08],271:[200,0.5,1.08],272:[200,0.5,1.08],273:[200,0.5,1.08],274:[200,0.5,1.08],275:[200,0.5,1.08],276:[200,0.5,1.08],277:[200,0.5,1.08],278:[200,0.5,1.08],279:[200,0.5,1.08],280:[200,0.5,1.08],281:[200,0.5,1.08],282:[200,0.5,1.08],283:[200,0.5,1.08],284:[200,0.5,1.08],285:[200,0.5,1.08],286:[200,0.5,1.08],287:[200,0.5,1.08],288:[200,0.5,1.08],289:[200,0.5,1.08],290:[200,0.5,1.08],291:[200,0.5,1.08],292:[75,1.0,1.08],293:[75,1.0,1.08],294:[75,1.0,1.08],295:[75,1.0,1.08],296:[75,1.0,1.08],297:[75,1.0,1.08],298:[75,1.0,1.08],299:[75,1.0,1.08],300:[75,1.0,1.08],301:[75,1.0,1.08],302:[75,1.0,1.08],303:[75,1.0,1.08],304:[75,1.0,1.08],305:[75,1.0,1.08],306:[75,1.0,1.08],307:[75,1.0,1.08],308:[75,1.0,1.08],309:[75,1.0,1.08],310:[75,1.0,1.08],311:[75,1.0,1.08],312:[75,1.0,1.08],313:[75,1.0,1.08],314:[75,1.0,1.08],315:[75,1.0,1.08],316:[75,1.0,1.08],317:[75,1.0,1.08],318:[250,1.0,0.95],319:[250,1.0,0.95],320:[250,1.0,0.95],321:[250,1.0,0.95],322:[250,1.0,0.95],323:[250,1.0,0.95],324:[250,1.0,0.95],325:[250,1.0,0.95],326:[250,1.0,0.95],327:[250,1.0,0.95],328:[250,1.0,0.95],329:[250,1.0,0.95],330:[250,1.0,0.95],331:[250,1.0,0.95],332:[250,1.0,0.95],333:[250,1.0,0.95],334:[250,1.0,0.95],335:[250,1.0,0.95],336:[250,1.0,0.95],337:[250,1.0,0.95],338:[250,1.0,0.95],339:[250,1.0,0.95],340:[250,1.0,0.95],341:[250,1.0,0.95],342:[250,1.0,0.95],343:[250,1.0,0.95],344:[250,1.0,0.95],345:[250,1.0,0.95],346:[250,1.0,0.95],347:[250,1.0,0.95],348:[250,1.0,0.95],349:[250,1.0,0.95],350:[250,1.0,0.95],351:[250,1.0,0.95],352:[250,1.0,0.95],353:[250,1.0,0.95],354:[250,1.0,0.95],355:[250,1.0,0.95],356:[250,1.0,0.95],357:[250,1.0,0.95],358:[250,1.0,0.95],359:[250,1.0,0.95],360:[250,1.0,0.95],361:[250,1.0,0.95],362:[250,1.0,0.95],363:[250,1.0,0.95],364:[250,1.0,0.95],365:[250,1.0,0.95],366:[250,1.0,0.95],367:[22,0.95,0.8],368:[22,0.95,0.8],369:[22,0.95,0.8],370:[22,0.95,0.8],371:[22,0.95,0.8],372:[22,0.95,0.8],373:[22,0.95,0.8],374:[22,0.95,0.8],375:[22,0.95,0.8],376:[22,0.95,0.8],377:[22,0.95,0.8],378:[22,0.95,0.8],379:[22,0.95,0.8],380:[22,0.95,0.8],381:[22,0.95,0.8],382:[22,0.95,0.8],383:[22,0.95,0.8],384:[22,0.95,0.8],385:[22,0.95,0.8],386:[250,1.0,0.95],387:[250,1.0,0.95],388:[250,1.0,0.95],389:[250,1.0,0.95],390:[250,1.0,0.95],391:[250,1.0,0.95],392:[250,1.0,0.95],393:[250,1.0,0.95],394:[250,1.0,0.95],395:[250,1.0,0.95],396:[250,1.0,0.95],397:[42,1.0,1.0],398:[42,1.0,1.0],399:[42,1.0,1.0],400:[42,1.0,1.0],401:[42,1.0,1.0],402:[42,1.0,1.0],403:[42,1.0,1.0],404:[42,1.0,1.0],405:[42,1.0,1.0],406:[42,1.0,1.0],407:[42,1.0,1.0],408:[42,1.0,1.0],409:[42,1.0,1.0],410:[42,1.0,1.0],411:[42,1.0,1.0],412:[42,1.0,1.0],413:[42,1.0,1.0],414:[42,1.0,1.0],415:[42,1.0,1.0],416:[42,1.0,1.0],417:[42,1.0,1.0],418:[42,1.0,1.0],419:[42,1.0,1.0],420:[42,1.0,1.0],421:[42,1.0,1.0],422:[42,1.0,1.0],423:[42,1.0,1.0],424:[42,1.0,1.0],425:[36,0.65,1.06],426:[36,0.65,1.06],427:[36,0.65,1.06],428:[36,0.65,1.06],429:[36,0.65,1.06],430:[36,0.65,1.06],431:[36,0.65,1.06],432:[36,0.65,1.06],433:[36,0.65,1.06],434:[36,0.65,1.06],435:[36,0.65,1.06],436:[36,0.65,1.06],437:[36,0.65,1.06],438:[36,0.65,1.06],439:[36,0.65,1.06],440:[20,1.0,1.05],441:[20,1.0,1.05],442:[20,1.0,1.05],443:[20,1.0,1.05],444:[20,1.0,1.05],445:[20,1.0,1.05],446:[20,1.0,1.05],447:[20,1.0,1.05],448:[20,1.0,1.05],449:[20,1.0,1.05],450:[20,1.0,1.05],451:[20,1.0,1.05],452:[20,1.0,1.05],453:[20,1.0,1.05],454:[20,1.0,1.05],455:[20,1.0,1.05],456:[20,1.0,1.05],457:[20,1.0,1.05],458:[20,1.0,1.05],459:[20,1.0,1.05],460:[20,1.0,1.05],461:[32,1.0,1.0],462:[32,1.0,1.0],463:[32,1.0,1.0],464:[32,1.0,1.0],465:[32,1.0,1.0],466:[32,1.0,1.0],467:[32,1.0,1.0],468:[32,1.0,1.0],469:[32,1.0,1.0],470:[32,1.0,1.0],471:[32,1.0,1.0],472:[32,1.0,1.0],473:[32,1.0,1.0],474:[32,1.0,1.0],475:[32,1.0,1.0],476:[32,1.0,1.0],477:[32,1.0,1.0],478:[32,1.0,1.0],479:[32,1.0,1.0],480:[32,1.0,1.0],481:[32,1.0,1.0],482:[32,1.0,1.0],483:[200,0.3,1.1],484:[200,0.3,1.1],485:[200,0.3,1.1],486:[200,0.3,1.1],487:[200,0.3,1.1],488:[200,0.3,1.1],489:[200,0.3,1.1],490:[200,0.3,1.1],491:[200,0.3,1.1],492:[200,0.3,1.1],493:[250,1.0,0.95],494:[220,0.18,1.1],495:[215,0.12,1.18],496:[45,1.0,1.0],497:[215,0.12,1.18],498:[54,1.0,1.02],499:[220,0.15,1.0],500:[28,0.9,0.95]};
       function photorealArt(item, revealOnly = false, fit = null) {
-        if (item.sprite && !revealOnly) return rosterSpriteArt(item,fit||"cover",false);
+        if (item.sprite) { const tint = ROSTER_TINT[item.rosterId] || ROSTER_TINT[item.id] || [215, 1, 1]; item = Object.assign({}, item, { hue: tint[0], sat: tint[1], bright: tint[2] }); }
         if (item.id === "stinky") return stinkyArt(revealOnly);
         if (item.id === "evan-burger") return evanBurgerArt();
         if (item.id === "sponge-dumpling") return spongeDumplingArt();
@@ -2167,8 +2218,8 @@
         if (item.id === "cube-dumpling") return cubeDumplingArt();
         const isGold = item.id === "golden-dumpling";
         const hue = item.hue || 0;
-        const sat = item.tier === "stardust" || item.tier === "mystery" ? 1.68 : 1.42;
-        const bright = item.parallel === "Moonstone" || item.parallel === "Pearl" ? 1.08 : .94;
+        const sat = item.sat || (item.tier === "stardust" || item.tier === "mystery" ? 1.68 : 1.42);
+        const bright = item.bright || (item.parallel === "Moonstone" || item.parallel === "Pearl" ? 1.08 : .94);
         const isParallel = item.tier === "stardust" || item.tier === "mystery";
         const steamColor = isGold ? "#ffd35e" : item.tier === "mystery" ? "#c29cff" : isParallel ? `hsl(${mod(hue+192,360)} 86% 67%)` : "#d8e9ec";
         const coloredSteam = `<span class="parallel-steam" style="--steam-color:${steamColor}" aria-hidden="true"><i></i><i></i><i></i></span>`;
@@ -2187,10 +2238,31 @@
         if (item.sprite) return `${item.rarity.toUpperCase()} · ${item.parallel.toUpperCase()}`;
         return `${item.parallel.toUpperCase()} PARALLEL`;
       }
+      // Tier spectacle markup: light effects layered around/over the approved
+      // dumpling art. Back = aura/rays/rings behind it; front = shimmer sweep
+      // + twinkling sparkles over it. Silhouette is never altered.
+      const TIER_FX_TIERS = ["chaser", "stardust", "grail"];
+      const TIER_SPARK_POS = [[12,20],[84,15],[6,52],[90,48],[22,79],[74,83],[50,5],[35,90],[64,64],[15,36],[86,70],[57,24],[30,58],[70,38]];
+      function tierSparkles(tier, count) {
+        return `<span class="tier-sparkles" aria-hidden="true">${TIER_SPARK_POS.slice(0, count).map(([x, y], i) => `<i style="--sx:${x}%;--sy:${y}%;--sd:${(-i * 0.37).toFixed(2)}s;--ss:${13 + ((i * 7) % 11)}px">✦</i>`).join("")}</span>`;
+      }
+      function tierFxBack(tier, calm = false) {
+        if (!TIER_FX_TIERS.includes(tier)) return "";
+        const rays = tier === "chaser" ? "" : `<span class="tier-rays"></span>`;
+        const ringCount = calm ? 0 : (tier === "chaser" ? 2 : 3);
+        const rings = Array.from({ length: ringCount }, (_, i) => `<span class="tier-ring" style="--rd:${(i * 0.75).toFixed(2)}s"></span>`).join("");
+        return `<span class="tier-fx-back tier-fx-${tier}${calm ? " tier-fx-calm" : ""}" aria-hidden="true">${rays}<span class="tier-aura"></span>${rings}</span>`;
+      }
+      function tierFxFront(tier, calm = false) {
+        if (!TIER_FX_TIERS.includes(tier)) return "";
+        const count = calm ? { chaser: 5, stardust: 6, grail: 8 }[tier] : { chaser: 7, stardust: 10, grail: 14 }[tier];
+        const shine = calm ? "" : `<span class="tier-shine"></span>`;
+        return `<span class="tier-fx-front tier-fx-${tier}${calm ? " tier-fx-calm" : ""}" aria-hidden="true">${shine}${tierSparkles(tier, count)}</span>`;
+      }
       function revealMarkup(item) {
         const sparkleClass = item.tier === "stardust" ? " stardust-wrap" : "";
         const actionLabel=item.tier === "gag" ? `Double tap ${item.name} to view it up close` : `Double tap ${item.name} to view it up close`;
-        return `<div class="reveal-art${sparkleClass}" data-item-id="${item.id}" role="button" tabindex="0" aria-label="${actionLabel}">${photorealArt(item, true)}</div><h2>${item.name}</h2><div class="rarity-banner ${item.tier}">${parallelLabel(item)}</div>`;
+        return `<div class="reveal-art${sparkleClass}" data-item-id="${item.id}" role="button" tabindex="0" aria-label="${actionLabel}">${tierFxBack(item.tier)}${photorealArt(item, true)}${tierFxFront(item.tier)}</div><h2>${item.name}</h2><div class="rarity-banner ${item.tier}">${parallelLabel(item)}</div>`;
       }
 
       const HAT_PROPS = [
@@ -2221,7 +2293,7 @@
         const item = state.result;
         if (!item) return;
         $("#customizeTitle").textContent = `Dress up ${item.name}`;
-        $("#customizeStage").innerHTML = `${photorealArt(item, true)}${propLayersMarkup(state.customHat, state.customGlasses)}`;
+        $("#customizeStage").innerHTML = `${tierFxBack(item.tier, true)}${photorealArt(item, true)}${tierFxFront(item.tier, true)}${propLayersMarkup(state.customHat, state.customGlasses)}`;
         const fillGrid = (el, props, kind, current) => {
           el.innerHTML = props.map(([file,label]) => `<button type="button" class="prop-option${current === file ? " selected" : ""}" data-prop-kind="${kind}" data-prop-file="${file}" aria-pressed="${current === file}" aria-label="${current === file ? `Take off ${label}` : `Put on ${label}`}"><img src="assets/props/${file}.png" alt=""></button>`).join("");
         };
@@ -2283,7 +2355,7 @@
         state.customHat = null;
         state.customGlasses = null;
         updateHud();
-        playAmpSound("revealSting");
+        playRevealSound(item);
         if (state.duplicate && addToAlbum) showDuplicate();
       }
       function replayReveal() {
@@ -2328,7 +2400,7 @@
           const item=allItems.find(x=>x.id===state.featured[slot]);
           const label=item?`${item.name} in trophy slot ${slot+1}. Tap to swap or remove.`:`Empty trophy slot ${slot+1}. Tap to choose a dumpling.`;
           return `<button type="button" class="trophy-shelf-slot ${item?"filled":"empty"}" data-trophy-slot="${slot}" aria-label="${label}">
-            ${item?`<span class="trophy-item">${photorealArt(item,false,"contain")}</span><span class="trophy-name">${item.name}</span>`:`<span class="trophy-add-mark" aria-hidden="true">+</span>`}
+            ${item?`<span class="trophy-item">${photorealArt(item,true)}</span><span class="trophy-name">${item.name}</span>`:`<span class="trophy-add-mark" aria-hidden="true">+</span>`}
           </button>`;
         }).join("");
       }
@@ -2352,7 +2424,7 @@
           const unavailable=available<1;
           const status=current?"Current":unavailable?"On wall":tierLabels[item.tier];
           return `<button type="button" class="trophy-pick" data-trophy-pick="${item.id}" ${unavailable?"disabled":""} aria-label="${current?`${item.name}, currently in this slot`:`Place ${item.name} in slot ${slot+1}`}">
-            <span class="trophy-pick-art">${photorealArt(item,false,"contain")}</span><span class="trophy-pick-name">${item.name}</span><span class="trophy-pick-status">${status}</span>
+            <span class="trophy-pick-art">${photorealArt(item,true)}</span><span class="trophy-pick-name">${item.name}</span><span class="trophy-pick-status">${status}</span>
           </button>`;
         }).join("");
       }
@@ -2365,7 +2437,7 @@
           const item=allItems.find(x=>x.id===state.featured[slot]);
           $("#trophyActionTitle").textContent=item.name;
           $("#trophyActionCopy").textContent=`Displayed in Trophy Wall slot ${slot+1}.`;
-          $("#trophyCurrentPreview").innerHTML=photorealArt(item,false,"contain");
+          $("#trophyCurrentPreview").innerHTML=photorealArt(item,true);
           $("#trophyCurrentPreview").classList.add("visible");
           $("#trophyPicker").classList.remove("visible");
           $("#trophyPicker").innerHTML="";
@@ -2515,7 +2587,7 @@
             const lockedGagAttrs = lockedGag ? ` data-locked-gag="true"` : "";
             const cardLabel = count ? (item.tier === "gag" ? `View ${item.name}` : `View ${item.name}`) : lockedGag ? "Mystery gag collectible, not found yet. Tap for a hint." : `${displayName}, not found yet`;
             return `<button type="button" class="collection-card ${count?"owned":"unowned"}" data-sound-id="${item.id}"${lockedGagAttrs} ${disabled?"disabled":""} aria-label="${cardLabel}">
-              <div class="collection-art ${item.tier==="stardust"&&count?"stardust-wrap":""}">${count?photorealArt(item):`<div class="locked-art" aria-hidden="true"><div class="unknown-mark">???</div></div>`}</div>
+              <div class="collection-art ${item.tier==="stardust"&&count?"stardust-wrap":""}${count&&item.sprite?" bare-art":""}">${count?photorealArt(item,!!item.sprite):`<div class="locked-art" aria-hidden="true"><div class="unknown-mark">???</div></div>`}</div>
               ${state.featured.includes(item.id)?`<div class="featured-badge">Wall ${state.featured.indexOf(item.id)+1}</div>`:""}
               ${count?`<div class="count-badge">×${count}</div>`:""}
               <div class="collection-name">${displayName}</div>
@@ -2908,6 +2980,42 @@
         g.gain.exponentialRampToValueAtTime(gain,audioCtx.currentTime+start+.012);
         g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+start+duration);
         o.connect(g).connect(masterGain); o.start(audioCtx.currentTime+start); o.stop(audioCtx.currentTime+start+duration+.02);
+      }
+      function playRevealSound(item) {
+        resumeAudio();
+        if (!audioCtx || audioCtx.state !== "running") return;
+        const tier = item && item.tier;
+        if (tier === "gag") playGagRevealSound();
+        else if (tier === "grail") playGrailRevealSound();
+        else if (tier === "chaser") playRareRevealSound();
+        else playStandardRevealSound();
+        document.documentElement.dataset.revealSoundPlayed = tier === "gag" ? "gag"
+          : tier === "grail" ? "grail" : tier === "chaser" ? "rare" : "standard";
+      }
+      function playStandardRevealSound() {
+        // Warm, delightful music-box chime: two-note triangle motif + soft sine sub.
+        tone(523.25, 0, .55, "triangle", .20, 523.25);
+        tone(783.99, .09, .6, "triangle", .18, 783.99);
+        tone(261.63, 0, .7, "sine", .10, 261.63);
+      }
+      function playRareRevealSound() {
+        // Golden sparkle: 4-note pentatonic arpeggio (triangle) + detuned sine shimmer.
+        [659.25, 783.99, 987.77, 1318.51].forEach((f, i) => {
+          tone(f, i * .08, .5, "triangle", .19, f);
+          tone(f * 2, i * .08 + .02, .55, "sine", .05, f * 2.01);
+        });
+      }
+      function playGrailRevealSound() {
+        // Full triumphant swell: warm sine pad under a 6-note triangle fanfare + shimmer.
+        [130.81, 164.81, 196.00, 261.63].forEach(f => tone(f, 0, 1.6, "sine", .09, f));
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => tone(f, .28 + i * .11, .8, "triangle", .20, f));
+        [2093.00, 2637.02].forEach((f, i) => tone(f, .5 + i * .14, .9, "sine", .045, f * 1.005));
+      }
+      function playGagRevealSound() {
+        // Funny, not majestic: comedic pitch-drop "womp" — sine/triangle only, no square/saw.
+        tone(392, 0, .42, "sine", .20, 155);
+        tone(330, .06, .46, "triangle", .10, 130);
+        tone(700, 0, .07, "triangle", .12, 920);
       }
       function popSound(kind) {
         if (!audioCtx) return;
@@ -3310,16 +3418,23 @@
       function particleBurst(tier) {
         resizeCanvas();
         const palette = {
-          common:["#aec3cc","#5b9ca3","#d5b35c"], stardust:["#ffffff","#91a8c0","#65aeb1"],
-          chaser:["#6ca9b2","#d5b35c","#ffffff"], grail:["#fff1b8","#d5aa3f","#ffffff"], mystery:["#152536","#69b0b4","#8da2bb"], gag:["#d6ef8f","#89c94d","#455f2c"]
+          common:["#aec3cc","#5b9ca3","#d5b35c"], stardust:["#ffffff","#c4b5fd","#818cf8","#93c5fd","#e9d5ff"],
+          chaser:["#fff3c4","#ffd76a","#ffb52e","#ffffff"], grail:["#fff8dc","#ffe27a","#ffc93d","#ffdf8e","#ffffff"], mystery:["#152536","#69b0b4","#8da2bb"], gag:["#d6ef8f","#89c94d","#455f2c"]
         }[tier];
-        const counts={common:14,stardust:30,chaser:42,grail:72,mystery:54,gag:36};
+        const counts={common:14,stardust:84,chaser:64,grail:120,mystery:54,gag:36};
         particles=[];
-        for(let i=0;i<counts[tier];i++){
-          const a=Math.random()*Math.PI*2, speed=2+Math.random()*(tier==="common"?5:10);
-          particles.push({x:innerWidth/2,y:innerHeight*.48,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed-2,life:55+Math.random()*40,size:3+Math.random()*7,color:palette[i%palette.length],spin:Math.random()*.3,shape:Math.random()>.55?"star":"dot"});
-        }
+        const spawnWave = n => {
+          for(let i=0;i<n;i++){
+            const a=Math.random()*Math.PI*2, speed=2+Math.random()*(tier==="common"?5:11);
+            particles.push({x:innerWidth/2,y:innerHeight*.48,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed-2,life:60+Math.random()*45,size:3+Math.random()*7,color:palette[i%palette.length],spin:Math.random()*.3,shape:Math.random()>.5?"star":"dot"});
+          }
+        };
+        spawnWave(counts[tier]);
         cancelAnimationFrame(raf); animateParticles();
+        // Rare+ tiers get a second, trailing wave so the burst feels layered.
+        if (tier === "grail" || tier === "stardust") {
+          setTimeout(() => { spawnWave(tier === "grail" ? 48 : 30); if (!raf) animateParticles(); }, 360);
+        }
       }
       function animateParticles(){
         ctx.clearRect(0,0,innerWidth,innerHeight);

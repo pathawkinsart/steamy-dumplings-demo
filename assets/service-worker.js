@@ -1,4 +1,4 @@
-const CACHE_NAME = "steamy-dumplings-shell-v7";
+const CACHE_NAME = "steamy-dumplings-shell-v10";
 const APP_SHELL = [
   "./app.html",
   "./manifest.webmanifest",
@@ -37,20 +37,32 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
+  // The app shell is network-first: shipped fixes must reach the installed
+  // app on its next open instead of being pinned to the first cached copy.
+  // Everything else stays cache-first and works offline as before.
+  const isShell = request.mode === "navigate" || url.pathname.endsWith("/app.html");
 
-      return fetch(request).then((response) => {
-        if (response && response.status === 200) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      if (isShell) {
+        try {
+          const fresh = await fetch(request);
+          if (fresh && fresh.status === 200) cache.put(request, fresh.clone());
+          return fresh;
+        } catch {
+          return (await cache.match(request)) || (await cache.match("./app.html")) || Response.error();
         }
+      }
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      try {
+        const response = await fetch(request);
+        if (response && response.status === 200) cache.put(request, response.clone());
         return response;
-      }).catch(() => {
-        if (request.mode === "navigate") return caches.match("./app.html");
+      } catch {
         return Response.error();
-      });
-    })
+      }
+    })()
   );
 });
