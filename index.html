@@ -1607,6 +1607,39 @@
       .order-toast { animation:none !important; opacity:1; transform:translateX(-50%); filter:none; }
       .ambient-toy-layer, .delivery-ship-layer { display:none; }
     }
+    /* v14: score readout + surprise steamer drops */
+    .hud-progress { grid-template-columns: auto minmax(36px,1fr) auto auto; }
+    .hud-score { display: inline-flex; align-items: center; gap: 5px; color: var(--sun); white-space: nowrap; }
+    .hud-score strong { color: #f3d57f; font-size: .84rem; letter-spacing: 0; }
+    .score-star { width: 14px; height: 14px; flex: 0 0 auto; }
+    .score-star path { fill: currentColor; stroke: none; }
+    @media (max-width: 480px) { .hud-score .score-word { display: none; } }
+    .dropped-layer { position: fixed; z-index: 14; inset: 0; pointer-events: none; }
+    .dropped-steamer {
+      position: fixed; width: 62px; height: 62px; padding: 0; border: 0; background: transparent;
+      cursor: pointer; pointer-events: auto; transform: translate(-50%,-50%);
+      animation: steamerDropIn .68s cubic-bezier(.2,.7,.3,1) both;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dropped-steamer .dropped-bob { display: block; width: 100%; height: 100%; animation: steamerBob 2.6s ease-in-out infinite; }
+    .dropped-steamer img { width: 100%; height: 100%; display: block; object-fit: contain; filter: drop-shadow(0 10px 12px rgba(0,0,0,.4)); pointer-events: none; }
+    .dropped-steamer::after {
+      content: ""; position: absolute; inset: -7px; border-radius: 50%;
+      border: 2px solid rgba(244,214,115,.55); pointer-events: none;
+      animation: steamerPulse 2.2s ease-out infinite;
+    }
+    .dropped-steamer:focus-visible { outline: 3px solid #f6d676; outline-offset: 3px; border-radius: 50%; }
+    @keyframes steamerDropIn {
+      0% { transform: translate(-50%,-190%) scale(.55); opacity: 0; }
+      55% { opacity: 1; }
+      78% { transform: translate(-50%,-42%) scale(1.05); opacity: 1; }
+      100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    }
+    @keyframes steamerBob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
+    @keyframes steamerPulse { 0% { transform: scale(.82); opacity: .9; } 70%,100% { transform: scale(1.12); opacity: 0; } }
+    .plane-cargo { position: absolute; z-index: 4; left: 50%; top: 84%; transform: translateX(-50%); display: flex; gap: 1px; pointer-events: none; }
+    .plane-cargo img { width: 19px; height: 19px; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0,0,0,.45)); }
+    .ambient-toy.plane.cargo { filter: drop-shadow(0 0 10px rgba(244,214,115,.5)) drop-shadow(0 8px 8px rgba(0,0,0,.34)); }
   </style>
 </head>
 <body>
@@ -1618,7 +1651,7 @@
         <span class="startup-gate-steam" aria-hidden="true"><i></i><i></i><i></i></span>
         <img class="startup-gate-steamer" src="assets/unified-sealed-bamboo-steamer.png" alt="">
       </button>
-      <span class="version-badge" aria-label="Build version 13">v13</span>
+      <span class="version-badge" aria-label="Build version 14">v14</span>
       <div class="startup-filmstrip left" aria-hidden="true"><canvas id="startupStripLeft"></canvas></div>
       <div class="startup-filmstrip right" aria-hidden="true"><canvas id="startupStripRight"></canvas></div>
       <div class="startup-stage" aria-hidden="true">
@@ -1660,6 +1693,7 @@
     </div>
     <div class="delivery-ship-layer" id="deliveryShipLayer" aria-hidden="true"></div>
     <div class="ambient-toy-layer paused" id="ambientToyLayer" aria-label="Floating toy surprises"></div>
+    <div class="dropped-layer" id="droppedSteamerLayer" aria-label="Surprise steamer baskets"></div>
     <section id="wheelScreen" class="screen active" aria-label="Pick a blind box">
       <div class="topbar">
         <div class="counter"><svg class="counter-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5c-1.6-1.2 1.4-2.1 0-3.4M12 5c-1.6-1.2 1.4-2.1 0-3.4M16 5c-1.6-1.2 1.4-2.1 0-3.4"/><ellipse cx="12" cy="10" rx="7.5" ry="2.8"/><path class="basket-fill" d="M4.5 10h15l-1.2 8.2c-4.2 2.2-8.4 2.2-12.6 0z"/><path d="M4.5 10h15l-1.2 8.2c-4.2 2.2-8.4 2.2-12.6 0zM5.1 14h13.8M6 18h12"/></svg><span>Steams</span><strong class="hud-pulls-number">10</strong><span class="refill-countdown" aria-label="Steam refill status">Full</span></div>
@@ -1670,7 +1704,7 @@
           </button>
         </div>
       </div>
-      <div class="hud-progress"><span>Collection</span><span class="hud-track"><span class="hud-mini-bar"></span></span><span class="hud-collected">0/30</span></div>
+      <div class="hud-progress"><span>Collection</span><span class="hud-track"><span class="hud-mini-bar"></span></span><span class="hud-collected">0/30</span><span class="hud-score" aria-label="Your score"><svg class="score-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg><span class="score-word">Score</span><strong class="hud-score-number">0</strong></span></div>
       <p class="collection-challenge">Can you collect them all?</p>
       <div class="hero-copy">
         <h1 class="app-logo" aria-label="HOT Steamy Dumplings"><svg class="logo-emblem" viewBox="0 0 64 64" aria-hidden="true"><path class="steam-line" d="M23 15c-4-5 5-6 1-12"/><path class="steam-line s2" d="M39 15c-4-5 5-6 1-12"/><path class="bao-line" d="M12 42c0-15 9-25 20-25s20 10 20 25c0 8-8 12-20 12S12 50 12 42Z"/><path class="bao-line" d="M32 17v11m0-11-8 13m8-13 8 13M32 17 18 33m14-16 14 16"/><path class="bao-line" d="M23 41h.1M41 41h.1M27 46q5 5 10 0"/></svg><span class="wordmark"><span class="hot-graffiti" aria-hidden="true">HOT</span><span class="spray-mist" aria-hidden="true"></span><span class="spray-can" aria-hidden="true"><i class="spray-nozzle"></i></span>Steamy Dumplings</span></h1>
@@ -1699,7 +1733,7 @@
           </button>
         </div>
       </div>
-      <div class="hud-progress"><span>Collection</span><span class="hud-track"><span class="hud-mini-bar"></span></span><span class="hud-collected">0/30</span></div>
+      <div class="hud-progress"><span>Collection</span><span class="hud-track"><span class="hud-mini-bar"></span></span><span class="hud-collected">0/30</span><span class="hud-score" aria-label="Your score"><svg class="score-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg><span class="score-word">Score</span><strong class="hud-score-number">0</strong></span></div>
       <div class="rip-copy" id="ripCopy"><h2>The unboxing</h2><p>Press and hold. Release when the squish is complete.</p></div>
       <div class="rip-stage" id="ripStage">
         <div class="steam" id="steam"><i></i><i></i><i></i></div>
@@ -1750,7 +1784,7 @@
           <div class="counter"><svg class="counter-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5c-1.6-1.2 1.4-2.1 0-3.4M12 5c-1.6-1.2 1.4-2.1 0-3.4M16 5c-1.6-1.2 1.4-2.1 0-3.4"/><ellipse cx="12" cy="10" rx="7.5" ry="2.8"/><path class="basket-fill" d="M4.5 10h15l-1.2 8.2c-4.2 2.2-8.4 2.2-12.6 0z"/><path d="M4.5 10h15l-1.2 8.2c-4.2 2.2-8.4 2.2-12.6 0zM5.1 14h13.8M6 18h12"/></svg><span>Steams</span><strong class="hud-pulls-number">10</strong><span class="refill-countdown" aria-label="Steam refill status">Full</span></div>
         </div>
       </div>
-      <div class="hud-progress"><span>Collection</span><span class="hud-track"><span class="hud-mini-bar"></span></span><span class="hud-collected">0/30</span></div>
+      <div class="hud-progress"><span>Collection</span><span class="hud-track"><span class="hud-mini-bar"></span></span><span class="hud-collected">0/30</span><span class="hud-score" aria-label="Your score"><svg class="score-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg><span class="score-word">Score</span><strong class="hud-score-number">0</strong></span></div>
       <header class="album-head"><h1>Squishy Shelf</h1><p>Your collection, arranged by rarity.</p></header>
       <div class="progress-card">
         <div class="progress-copy"><strong id="progressTitle">0% complete</strong><span id="progressCount">0 of 30</span></div>
@@ -1828,9 +1862,15 @@
       ];
       const allItems = [...commons, ...stardust, ...chasers, ...grail, ...mystery, ...gags];
       const tierLabels = { common:"Common", stardust:"Stardust Parallel", chaser:"Rare Dumpling", grail:"Gold Parallel", mystery:"Mystery", gag:"Gag Collectible" };
+      // Point value of every dumpling by rarity tier. The score is derived from
+      // the collection itself (count x tier value), so it always persists with it.
+      const TIER_POINTS = { common:10, chaser:25, stardust:50, grail:100, mystery:100, gag:15 };
+      function collectionScore() {
+        return allItems.reduce((total, item) => total + (state.collection[item.id] || 0) * (TIER_POINTS[item.tier] || 0), 0);
+      }
       const REFILL_MS = 60 * 60 * 1000;
       const STEAM_CAP = 10;
-      const state = { screen:"wheel", selected:0, pulls:10, nextRefillAt:null, collection:{}, featured:Array(10).fill(null), trophySlot:null, trophyMode:"picker", result:null, duplicate:false, opening:false, previousScreen:"wheel", playItem:null, playReturnScreen:"album", unviewedPull:false, customHat:null, customGlasses:null, dressedUps:[], customizeItem:null, customizeFrom:"reveal" };
+      const state = { screen:"wheel", selected:0, pulls:10, nextRefillAt:null, collection:{}, featured:Array(10).fill(null), trophySlot:null, trophyMode:"picker", result:null, duplicate:false, opening:false, previousScreen:"wheel", playItem:null, playReturnScreen:"album", unviewedPull:false, customHat:null, customGlasses:null, dressedUps:[], customizeItem:null, customizeFrom:"reveal", freeOpen:false };
       const packColors = [
         {main:"#526f84", light:"#9fb6c3", gleam:"#eaf3f5", sparkle:"#d7eef0"},
         {main:"#286f75", light:"#86b5b8", gleam:"#e8f4f4", sparkle:"#ffffff"},
@@ -2068,6 +2108,7 @@
         })();
         $$(".refill-countdown").forEach(el => { el.textContent = refillText; el.setAttribute("aria-label", state.pulls >= STEAM_CAP ? "Steams full" : `${refillText} until next steam`); });
         $$(".hud-collected").forEach(el => el.textContent = `${owned}/${allItems.length}`);
+        $$(".hud-score-number").forEach(el => el.textContent = collectionScore());
         $$(".hud-mini-bar").forEach(el => el.style.width = `${pct}%`);
         $$(".new-badge").forEach(el => el.classList.toggle("visible", state.unviewedPull));
         $$(".shelf-button").forEach(el => el.classList.toggle("has-new", state.unviewedPull));
@@ -2091,6 +2132,7 @@
       }
       function choosePack(i=state.selected) {
         if (state.screen !== "wheel" || state.pulls <= 0) return;
+        state.freeOpen = false;
         state.selected = Number(i);
         state.result = rollItem(); state.opening = false;
         resumeAudio(); playClip(steamerPickAudio);
@@ -2116,7 +2158,8 @@
       }
       let holdStarted = 0;
       function startSquish(e) {
-        if (state.opening || state.pulls <= 0 || holdStarted) return;
+        if (state.opening || holdStarted) return;
+        if (!state.freeOpen && state.pulls <= 0) return;
         if (e && e.type.startsWith("pointer")) e.currentTarget.setPointerCapture?.(e.pointerId);
         holdStarted = performance.now() - (e && e.type === "keydown" ? 310 : 0);
         resumeAudio(); popSound("squish");
@@ -2152,7 +2195,7 @@
         return pool[Math.floor(Math.random()*pool.length)];
       }
       function triggerOpen() {
-        if (state.opening || state.pulls <= 0) return;
+        if (state.opening || (!state.freeOpen && state.pulls <= 0)) return;
         const sequence = ++revealSequence;
         state.opening = true;
         resumeAudio();
@@ -2161,8 +2204,11 @@
         $("#bigPack").classList.add("squashing");
         state.result = state.result || rollItem();
         state.duplicate = !!state.collection[state.result.id];
-        state.pulls -= 1;
-        if (!state.nextRefillAt) state.nextRefillAt = Date.now() + REFILL_MS;
+        if (state.freeOpen) state.freeOpen = false;
+        else {
+          state.pulls -= 1;
+          if (!state.nextRefillAt) state.nextRefillAt = Date.now() + REFILL_MS;
+        }
         state.collection[state.result.id] = (state.collection[state.result.id] || 0) + 1;
         state.unviewedPull = true;
         updateHud();
@@ -3201,6 +3247,12 @@
       // The rare shimmering bonus balloon always pays its +2. Tune this one number
       // to make the +1 rarer or more generous.
       const STEAMY_PLUS1_CHANCE = 0.35;
+      // PINATA_STEAMER_CHANCE: odds that a cracked piñata also spills sealed
+      // steamer baskets the player can tap open (free blind-box pulls).
+      // PLANE_CARGO_CHANCE: odds that a plane pass is hauling 5+ sealed
+      // steamers, dropped when the plane is tapped or as it crosses.
+      const PINATA_STEAMER_CHANCE = 0.45;
+      const PLANE_CARGO_CHANCE = 0.2;
       function ambientToyMarkup(type) {
         if (type === "balloon") return '<img class="toy-balloon-img" src="assets/party-balloon-red.png" alt="" aria-hidden="true">';
         if (type === "plane") return `<span class="plane-flight" aria-hidden="true"><span class="crop-dust"><i></i><i></i><i></i></span><img class="toy-plane-svg" src="assets/biplane-3d.png" alt=""></span><span class="plane-poof" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>`;
@@ -3239,6 +3291,11 @@
       }
       function poofPlane(button) {
         if (button.classList.contains("poofed")) return;
+        if (button.dataset.cargo && !button._cargoDropped) {
+          button._cargoDropped = true;
+          const r = button.getBoundingClientRect();
+          dropSteamers(r.left + r.width / 2, r.top + r.height * .7, Number(button.dataset.cargo));
+        }
         button.style.animationPlayState = "paused";
         button.classList.add("reacting", "poofed");
         button._stopCropFart?.();
@@ -3331,6 +3388,45 @@
           ambientToyLayer.dataset.lastBonusAward = String(amount);
         }, 150 + (chips - 1) * 120 + 820);
       }
+      // Sealed steamer baskets spilled by piñatas and cargo planes. They land
+      // on screen and wait to be tapped; opening one runs the normal unboxing
+      // flow (hold, squish, reveal) without spending a Steam.
+      function dropSteamers(x, y, count) {
+        const layer = $("#droppedSteamerLayer");
+        if (!layer) return 0;
+        const n = Math.min(count, Math.max(0, 8 - layer.children.length));
+        for (let i = 0; i < n; i++) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "dropped-steamer";
+          btn.setAttribute("aria-label", "Open a surprise steamer basket");
+          const spread = (i - (n - 1) / 2) * 58 + (Math.random() * 16 - 8);
+          // Keep drops inside the centered app column, not the page margins.
+          const appW = Math.min(760, innerWidth), appX = Math.max(0, (innerWidth - appW) / 2);
+          const lx = Math.min(Math.max(x + spread, appX + 44), appX + appW - 44);
+          const ly = Math.min(y + 96 + (i % 2) * 38 + Math.random() * 10, innerHeight - 110);
+          btn.style.left = `${lx}px`;
+          btn.style.top = `${ly}px`;
+          btn.style.animationDelay = `${(i * 0.09).toFixed(2)}s`;
+          btn.innerHTML = `<span class="dropped-bob" style="animation-delay:${(0.65 + i * 0.09).toFixed(2)}s"><img src="assets/unified-sealed-bamboo-steamer.png" alt=""></span>`;
+          btn.addEventListener("click", () => openDroppedSteamer(btn));
+          layer.appendChild(btn);
+        }
+        if (n > 0) ambientToyLayer.dataset.lastSteamerDrop = String(n);
+        return n;
+      }
+      function openDroppedSteamer(el) {
+        if (state.opening || state.freeOpen) return;
+        if (state.screen === "customize" || state.screen === "play") return;
+        if (state.screen === "rip" && $("#ripScreen").classList.contains("reveal-active")) return;
+        el.remove();
+        state.result = rollItem();
+        state.opening = false;
+        state.freeOpen = true;
+        resumeAudio();
+        prepareRip();
+        setScreen("rip");
+      }
       function burstAmbientToy(button, type, tapPoint) {
         if (button.classList.contains("reacting")) return;
         if (type === "plane") { poofPlane(button); return; }
@@ -3413,6 +3509,11 @@
         document.body.appendChild(burst);
         if (type === "pinata") {
           setTimeout(() => playAmpSound("candyScatter"), 120);
+          // Sometimes the piñata was hiding more than candy: sealed steamers.
+          if (Math.random() < PINATA_STEAMER_CHANCE) {
+            const count = Math.random() < .6 ? 1 : (Math.random() < .75 ? 2 : 3);
+            setTimeout(() => dropSteamers(originX, originY, count), 380);
+          }
         }
         ambientToyLayer.dataset.lastPopped = type;
         ambientToyLayer.dataset.lastBurstX = String(Math.round(originX));
@@ -3444,6 +3545,24 @@
           }
         }
         button.innerHTML = ambientToyMarkup(type);
+        if (type === "plane" && Math.random() < PLANE_CARGO_CHANCE) {
+          const cargoCount = 5 + Math.floor(Math.random() * 3);
+          button.classList.add("cargo");
+          button.dataset.cargo = String(cargoCount);
+          button.setAttribute("aria-label", "Tap the airplane carrying steamer baskets");
+          const rack = document.createElement("span");
+          rack.className = "plane-cargo";
+          rack.setAttribute("aria-hidden", "true");
+          rack.innerHTML = Array.from({length: cargoCount}, () => '<img src="assets/unified-sealed-bamboo-steamer.png" alt="">').join("");
+          button.querySelector(".plane-flight")?.appendChild(rack);
+          // An untapped cargo plane still unloads its steamers as it crosses.
+          setTimeout(() => {
+            if (!button.isConnected || button.classList.contains("poofed") || button._cargoDropped) return;
+            button._cargoDropped = true;
+            const r = button.getBoundingClientRect();
+            dropSteamers(r.left + r.width / 2, r.top + r.height * .7, cargoCount);
+          }, 2900);
+        }
         const activateToy = event => {
           if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
           if (event.type === "keydown") event.preventDefault();
@@ -3777,6 +3896,11 @@
       if (fxWheel) {
         fxWheel.addEventListener("touchstart", e => {
           if (!fxRunning) return;
+          // Fog patches sit in the screen corners, right where the topbar
+          // buttons live. Eating the touchstart here (preventDefault) would
+          // swallow the tap before it can become a click, so touches that land
+          // on a real control never start a fog wipe.
+          if (e.target.closest("button, a, input, select, textarea, [role='button']")) return;
           const p = fxEvtPt(e);
           if (FogFX.hitTest(p.x, p.y)) { FogFX.beginDraw(p.x, p.y); e.preventDefault(); }
         }, { passive: false });
@@ -3788,6 +3912,7 @@
         ["touchend", "touchcancel"].forEach(ev => fxWheel.addEventListener(ev, () => FogFX.endDraw()));
         fxWheel.addEventListener("pointerdown", e => {
           if (e.pointerType !== "mouse" || !fxRunning) return;
+          if (e.target.closest("button, a, input, select, textarea, [role='button']")) return;
           const p = fxEvtPt(e);
           if (FogFX.hitTest(p.x, p.y)) FogFX.beginDraw(p.x, p.y);
         });
@@ -3957,7 +4082,7 @@
       $("#wheelAlbumBtn").addEventListener("click",()=>{state.previousScreen="wheel";setScreen("album")});
       $("#ripAlbumBtn").addEventListener("click",()=>{state.previousScreen="rip";setScreen("album")});
       $("#revealAlbumBtn").addEventListener("click",()=>{state.previousScreen="rip";setScreen("album")});
-      $("#ripBackBtn").addEventListener("click",()=>{cancelSquish();setScreen("wheel")});
+      $("#ripBackBtn").addEventListener("click",()=>{cancelSquish();state.freeOpen=false;setScreen("wheel")});
       $("#albumBackBtn").addEventListener("click",()=>setScreen("wheel"));
       function bindHold(el){
         el.addEventListener("pointerdown",e=>{e.preventDefault();startSquish(e)});

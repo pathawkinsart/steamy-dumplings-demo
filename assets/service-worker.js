@@ -1,4 +1,4 @@
-const CACHE_NAME = "steamy-dumplings-shell-v13";
+const CACHE_NAME = "steamy-dumplings-shell-v14";
 const APP_SHELL = [
   "./app.html",
   "./manifest.webmanifest",
